@@ -4,19 +4,9 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"sort"
 	"strconv"
 )
-
-type Product struct {
-	ID          int     `json:"id"`
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	Price       float64 `json:"price"`
-}
-
-type ErrorResponse struct {
-	Message string `json:"message"`
-}
 
 var productStore []Product = make([]Product, 0)
 
@@ -45,7 +35,23 @@ func NewHandlerSet() *HandlerSet {
 }
 
 func (h *HandlerSet) AllProducts(w http.ResponseWriter, r *http.Request) {
-	WriteJSON(w, http.StatusOK, productStore)
+	// Extract 'sort' query parameter
+	queryParams := r.URL.Query()
+	sortValue := queryParams.Get("sort")
+
+	// Create copy of products
+	products := make([]Product, len(productStore))
+	copy(products, productStore)
+
+	// Implement sort
+	switch sortValue {
+	case "id":
+		sort.Sort(ByID(products))
+	case "name":
+		sort.Sort(ByName(products))
+	}
+
+	WriteJSON(w, http.StatusOK, products)
 }
 
 func (h *HandlerSet) NotFound(w http.ResponseWriter, r *http.Request) {
