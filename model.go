@@ -4,6 +4,11 @@ type ErrorResponse struct {
 	Message string `json:"message"`
 }
 
+type TokenResponse struct {
+	Access  string `json:"access"`
+	Refresh string `json:"refresh"`
+}
+
 type Product struct {
 	ID          int     `json:"id"`
 	Name        string  `json:"name"`

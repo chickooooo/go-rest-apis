@@ -13,6 +13,9 @@ func main() {
 	handlerSet := NewHandlerSet()
 
 	// Define routes
+	mux.HandleFunc("POST /login", handlerSet.Login)
+	mux.HandleFunc("GET /protected", handlerSet.Protected) // protected route
+
 	mux.HandleFunc("GET /products", handlerSet.AllProducts)
 	mux.HandleFunc("POST /products", handlerSet.AddProduct)
 

@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"math/rand"
 	"net/http"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 var productStore []Product = make([]Product, 0)
@@ -32,6 +34,69 @@ type HandlerSet struct{}
 
 func NewHandlerSet() *HandlerSet {
 	return &HandlerSet{}
+}
+
+func (h *HandlerSet) Login(w http.ResponseWriter, r *http.Request) {
+	// Dummy user login
+	loginSuccess := rand.Intn(2)
+	if loginSuccess == 0 {
+		data := ErrorResponse{"Invalid credentials"}
+		WriteJSON(w, http.StatusUnauthorized, data)
+		return
+	}
+
+	// Generate access and refresh token
+	accessToken, err := NewAccessToken(999)
+	if err != nil {
+		log.Println("Error generating access token:", err)
+		data := ErrorResponse{"Something went wrong"}
+		WriteJSON(w, http.StatusInternalServerError, data)
+		return
+	}
+	refreshToken, err := NewRefreshToken(999)
+	if err != nil {
+		log.Println("Error generating refresh token:", err)
+		data := ErrorResponse{"Something went wrong"}
+		WriteJSON(w, http.StatusInternalServerError, data)
+		return
+	}
+
+	// Send token response
+	response := TokenResponse{
+		Access:  accessToken,
+		Refresh: refreshToken,
+	}
+	WriteJSON(w, http.StatusOK, response)
+}
+
+func (h *HandlerSet) Protected(w http.ResponseWriter, r *http.Request) {
+	// Get authorization header
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		data := ErrorResponse{"Invalid credentials"}
+		WriteJSON(w, http.StatusUnauthorized, data)
+		return
+	}
+
+	// Verify authorization header has a valid format: "Bearer <token>"
+	parts := strings.SplitN(authHeader, " ", 2)
+	if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
+		data := ErrorResponse{"Invalid credentials"}
+		WriteJSON(w, http.StatusUnauthorized, data)
+		return
+	}
+	tokenStr := parts[1]
+
+	// Verify token and extract user ID
+	userID, err := VerifyToken(tokenStr)
+	if err != nil {
+		log.Println("Error verifying token:", err)
+		data := ErrorResponse{"Invalid credentials"}
+		WriteJSON(w, http.StatusUnauthorized, data)
+		return
+	}
+
+	WriteJSON(w, http.StatusOK, userID)
 }
 
 func (h *HandlerSet) AllProducts(w http.ResponseWriter, r *http.Request) {
