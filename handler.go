@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
-	"strings"
 )
 
 var productStore []Product = make([]Product, 0)
@@ -70,32 +69,8 @@ func (h *HandlerSet) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HandlerSet) Protected(w http.ResponseWriter, r *http.Request) {
-	// Get authorization header
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
-		data := ErrorResponse{"Invalid credentials"}
-		WriteJSON(w, http.StatusUnauthorized, data)
-		return
-	}
-
-	// Verify authorization header has a valid format: "Bearer <token>"
-	parts := strings.SplitN(authHeader, " ", 2)
-	if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
-		data := ErrorResponse{"Invalid credentials"}
-		WriteJSON(w, http.StatusUnauthorized, data)
-		return
-	}
-	tokenStr := parts[1]
-
-	// Verify token and extract user ID
-	userID, err := VerifyToken(tokenStr)
-	if err != nil {
-		log.Println("Error verifying token:", err)
-		data := ErrorResponse{"Invalid credentials"}
-		WriteJSON(w, http.StatusUnauthorized, data)
-		return
-	}
-
+	// Get user ID from the context
+	userID := r.Context().Value(UserIDKey)
 	WriteJSON(w, http.StatusOK, userID)
 }
 

@@ -27,7 +27,10 @@ func main() {
 	// Invalid route
 	mux.HandleFunc("/", handlerSet.NotFound)
 
+	// Add middlewares
+	muxWithMiddlewares := StackMiddlewares(mux)
+
 	// Start server
 	log.Println("Server started at port 8000...")
-	log.Fatal(http.ListenAndServe(":8000", mux))
+	log.Fatal(http.ListenAndServe(":8000", muxWithMiddlewares))
 }

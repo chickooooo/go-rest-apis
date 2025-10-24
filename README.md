@@ -1,6 +1,6 @@
 # go-rest-apis
 
-* This repo is a minimal exploration of Go’s **`net/http`** package and the **Routing Enhancements introduced in Go 1.22+**.
+* This repo is a minimal exploration of Go’s `net/http` package and the **Routing Enhancements introduced in Go 1.22+**.
 * It serves as a sandbox to test how the new native routing features fit into REST API development.
 * It also explores how to implement **JWT (JSON Web Token)** and use it to protect routes.
 
